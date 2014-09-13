@@ -21,6 +21,7 @@ PATH="${PATH}:/usr/texbin"
 
 R_BUILD_ARGS=${R_BUILD_ARGS-"--no-build-vignettes --no-manual"}
 R_CHECK_ARGS=${R_CHECK_ARGS-"--no-build-vignettes --no-manual --as-cran"}
+R_CHECK_TIME=${R_CHECK_TIME:-"FALSE"}
 
 R_USE_BIOC_CMDS="source('${BIOC}');"\
 " tryCatch(useDevel(${BIOC_USE_DEVEL}),"\
@@ -251,7 +252,21 @@ RunTests() {
     if [[ "$_R_CHECK_CRAN_INCOMING_" == "FALSE" ]]; then
         echo "(CRAN incoming checks are off)"
     fi
-    _R_CHECK_CRAN_INCOMING_=${_R_CHECK_CRAN_INCOMING_} R CMD check "${FILE}" ${R_CHECK_ARGS}
+    
+    if [[ ${R_CHECK_TIME} == "FALSE" ]]; then
+        _R_CHECK_CRAN_INCOMING_=${_R_CHECK_CRAN_INCOMING_} R CMD check "${FILE}" ${R_CHECK_ARGS}
+    else
+        if [[ "${OS}" == "Linux" || "${OS}" == "Darwin" ]]; then
+            time _R_CHECK_CRAN_INCOMING_=${_R_CHECK_CRAN_INCOMING_} R CMD check "${FILE}" ${R_CHECK_ARGS}
+        elif [[ "${OS:0:5}" == "MINGW" ]]; then
+            echo "%DATE% %TIME%"
+            _R_CHECK_CRAN_INCOMING_=${_R_CHECK_CRAN_INCOMING_} R CMD check "${FILE}" ${R_CHECK_ARGS}
+            echo "%DATE% %TIME%"
+        else
+            echo "Unknown OS (${OS}) and cannot check time"
+            _R_CHECK_CRAN_INCOMING_=${_R_CHECK_CRAN_INCOMING_} R CMD check "${FILE}" ${R_CHECK_ARGS}
+        fi
+    fi
 
     # Check reverse dependencies
     if [[ -n "$R_CHECK_REVDEP" ]]; then
