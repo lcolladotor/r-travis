@@ -255,7 +255,7 @@ RunTests() {
     
     if [[ ${R_CHECK_TIME} == "FALSE" ]]; then
         _R_CHECK_CRAN_INCOMING_=${_R_CHECK_CRAN_INCOMING_} R CMD check "${FILE}" ${R_CHECK_ARGS}
-    else
+    elif [[ ${R_CHECK_TIME} == "TRUE" ]]; then
         if [[ "${OS}" == "Linux" || "${OS}" == "Darwin" ]]; then
             time _R_CHECK_CRAN_INCOMING_=${_R_CHECK_CRAN_INCOMING_} R CMD check "${FILE}" ${R_CHECK_ARGS}
         elif [[ "${OS:0:5}" == "MINGW" ]]; then
@@ -266,6 +266,8 @@ RunTests() {
             echo "Unknown OS (${OS}) and cannot check time"
             _R_CHECK_CRAN_INCOMING_=${_R_CHECK_CRAN_INCOMING_} R CMD check "${FILE}" ${R_CHECK_ARGS}
         fi
+    else
+        echo "R_CHECK_TIME should be set to TRUE or FALSE."
     fi
 
     # Check reverse dependencies
